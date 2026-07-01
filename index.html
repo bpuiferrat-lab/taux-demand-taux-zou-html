@@ -430,6 +430,26 @@ const CAT_LABELS = {
   all: 'Tous'
 };
 
+const NETWORK_MAP = {
+  'BNP Paribas': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'CCF': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'La Banque Postale': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'Fortuneo': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'Palatine': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'BRED': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'HSBC': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
+  'CIC': 'CIC / CM Non Partenaires / CM Partenaires',
+  'Credit Mutuel Non Partenaires': 'CIC / CM Non Partenaires / CM Partenaires',
+  'Credit Mutuel Partenaires': 'CIC / CM Non Partenaires / CM Partenaires',
+  'LCL': 'LCL',
+  'SG IDF': 'Société Générale',
+  'SG Province': 'Société Générale',
+};
+
+function networkOf(bank) {
+  return NETWORK_MAP[bank] || bank;
+}
+
 function rowToObj(r) {
   const bank = r.banque || '';
   return {
