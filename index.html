@@ -561,6 +561,16 @@ document.getElementById('search').addEventListener('input', e => {
   render();
 });
 
+const CAT_LABELS = {
+  banque_client: 'Banque client',
+  concurrence: 'Concurrence',
+  nouvelle_grille: 'Nouvelle grille',
+  accord_commercial: 'Accord commercial',
+  echange_prealable: 'Échange préalable',
+  grille_incorrecte: 'Grille incorrecte',
+  autre: 'Autre',
+  all: 'Tous'
+};
 // Patch render for multi-cat
 const _render = render;
 window.render = function() {
