@@ -406,15 +406,15 @@ function normalizeBank(bank) {
   return bank || 'Inconnu';
 }
 
-function reasonToCat(reason) {
-  if (!reason) return 'autre';
-  const r = reason.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  if (r.includes('accord')) return 'accord_commercial';
-  if (r.includes('echange') || r.includes('prealable')) return 'echange_prealable';
-  if (r.includes('concurr')) return 'concurrence';
-  if (r.includes('grille') && r.includes('incorr')) return 'grille_incorrecte';
-  if (r.includes('nouvelle') || r.includes('rare')) return 'nouvelle_grille';
-  if (r.includes('banque') || r.includes('client') || r.includes('bank')) return 'banque_client';
+function categorize(comment, reason) {
+  const c = (comment || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const r = (reason || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (r.includes('zou rare') || r.includes('rare')) return 'nouvelle_grille';
+  if (c.includes('offre') || c.includes('concurr') || c.includes('concurrent') || c.includes('proposition agress') || c.includes('propal concurrent')) return 'concurrence';
+  if (c.includes('achp') || c.includes('en amont') || (c.includes('appelle') && c.includes('amont'))) return 'echange_prealable';
+  if (c.includes('accord') || c.includes('echange mail') || c.includes('deja un accord') || c.includes('principe')) return 'accord_commercial';
+  if (c.includes('erreur') || c.includes('pensais avoir') || c.includes('taux basique') || c.includes('basee sur la grille')) return 'grille_incorrecte';
+  if (c.includes('client') || c.includes('profil') || c.includes('epargne') || c.includes('patrimoni') || c.includes('dossier')) return 'banque_client';
   return 'autre';
 }
 
@@ -463,7 +463,7 @@ function rowToObj(r) {
     comment: r.comment || '',
     projectId: r.project_id || '',
     bareme: r.reason || null,
-    cat: reasonToCat(r.reason || ''),
+    cat: categorize(r.comment || '', r.reason || ''),
     delta: Math.round(((parseFloat(r.interrogation_rate)||0) - (parseFloat(r.grid_rate)||0)) * 1000) / 1000
   };
 }
@@ -483,7 +483,7 @@ function parseCSV(text) {
     const obj = {};
     headers.forEach((h, i) => obj[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''));
     return obj;
-  }).filter(r => r.jour && /^\d{4}-\d{2}-\d{2}$/.test(r.jour));
+  }).filter(r => r.jour && r.jour !== 'jour' && r.interrogation_rate !== '');
 }
 
 async function fetchData() {
