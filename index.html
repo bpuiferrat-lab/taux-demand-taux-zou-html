@@ -403,7 +403,26 @@ function nameFromEmail(email) {
 }
 
 function normalizeBank(bank) {
-  return bank || 'Inconnu';
+  if (!bank) return 'Inconnu';
+  const b = bank.trim();
+  // Mono-entité : collapse toutes variantes en un seul label
+  if (b === 'BNP Paribas') return 'BNP';
+  if (b === 'La Banque Postale') return 'LBP';
+  if (b === 'CCF') return 'CCF';
+  if (b === 'CIC') return 'CIC';
+  if (b === 'LCL') return 'LCL';
+  if (b === 'Fortuneo') return 'Fortuneo';
+  if (b === 'Palatine') return 'Palatine';
+  if (b === 'BRED') return 'BRED';
+  if (b === 'HSBC') return 'HSBC';
+  // Crédit Mutuel : 2 buckets
+  if (b === 'Credit Mutuel Partenaires' || b === 'Crédit Mutuel Partenaires') return 'Crédit Mutuel Partenaires';
+  if (b.toLowerCase().includes('credit mutuel') || b.toLowerCase().includes('crédit mutuel')) return 'Crédit Mutuel Non Partenaires';
+  // Société Générale : IDF vs Province
+  if (b === 'SG IDF') return 'SG IDF';
+  if (b === 'SG Province' || b.startsWith('Société Générale')) return 'SG Province';
+  // CA / CE / BP + autres : ligne à ligne, inchangé
+  return b;
 }
 
 function categorize(comment, reason) {
@@ -593,16 +612,7 @@ const NETWORK_MAP = {
   'SG IDF': 'Société Générale',
   'SG Province': 'Société Générale'
 };
-function networkOf(bank) {
-  if (!bank) return "Autre";
-  if (bank.startsWith("Caisse D Epargne") || bank.startsWith("Caisse d Epargne")) return "Caisse d Epargne";
-  if (bank.startsWith("Banque Populaire") || bank.startsWith("Bpvf") || bank.startsWith("Bp ")) return "Banque Populaire";
-  if (bank.startsWith("Credit Agricole")) return "Credit Agricole";
-  if (bank === "SG IDF" || bank === "SG Province") return "Societe Generale";
-  if (bank === "CIC" || bank.startsWith("Credit Mutuel")) return "CIC / Credit Mutuel";
-  if (bank === "BNP Paribas" || bank === "La Banque Postale" || bank === "Fortuneo" || bank === "Palatine" || bank === "BRED" || bank === "HSBC" || bank === "CCF") return "BNP / LBP / BRED / HSBC";
-  return bank;
-}
+function networkOf(bank) { return bank || 'Inconnu'; }
 // Patch render for multi-cat
 const _render = render;
 window.render = function() {
