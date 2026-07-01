@@ -387,6 +387,29 @@
 // ── Google Sheets CSV live data ─────────────────────────────────────────────
 let DATA = [];
 
+function nameFromEmail(email) {
+  if (!email) return '?';
+  const local = email.split('@')[0];
+  const parts = local.split('.');
+  if (parts.length >= 2) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + ' ' + parts[1].charAt(0).toUpperCase() + '.';
+  return local;
+}
+
+function normalizeBank(bank) {
+  return bank || 'Inconnu';
+}
+
+function categorize(comment) {
+  const c = comment.toLowerCase();
+  if (c.includes('concurr') || c.includes('concurrent')) return 'concurrence';
+  if (c.includes('nouvelle grille') || c.includes('nouvelle barème') || c.includes('nouveau barème') || c.includes('nouvelle bareme') || c.includes('grille a changé') || c.includes('grille a change')) return 'nouvelle_grille';
+  if (c.includes('accord commercial') || c.includes('acc com') || c.includes('accord com')) return 'accord_commercial';
+  if (c.includes('échange') || c.includes('echange') || c.includes('exchange')) return 'echange_prealable';
+  if (c.includes('grille incorrecte') || c.includes('erreur grille') || c.includes('mauvaise grille')) return 'grille_incorrecte';
+  if (c.includes('banque') || c.includes('client') || c.includes('dossier') || c.includes('profil')) return 'banque_client';
+  return 'autre';
+}
+
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUodlURhK3RfqYzHl01a_OX_moPsJdjBFc__y0wgJxhxb6uEAahUHYnekLlZ1JEVpTajN7wzShC3JJ/pub?output=csv';
 
 function rowToObj(r) {
