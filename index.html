@@ -1,0 +1,787 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<title>Taux demandé &lt;&lt; Taux Zou — Juin 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4F6FA;
+    --surface: #FFFFFF;
+    --border: #DDE2EC;
+    --text: #1A2136;
+    --muted: #64748B;
+    --accent: #2255CC;
+    --accent-light: #EBF0FC;
+
+    --c-client: #DBEAFE;   --t-client: #1E3A8A;
+    --c-nego: #D1FAE5;     --t-nego: #065F46;
+    --c-flag: #FEE2E2;     --t-flag: #991B1B;
+    --c-profil: #EDE9FE;   --t-profil: #5B21B6;
+    --c-echange: #FEF9C3;  --t-echange: #854D0E;
+    --c-surfi: #FFEDD5;    --t-surfi: #9A3412;
+    --c-autre: #F1F5F9;    --t-autre: #475569;
+
+    --radius: 6px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 0 0 48px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-left h1 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .header-left p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: right; }
+  .stat-n {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .controls {
+    padding: 16px 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  input[type="search"] {
+    width: 100%;
+    padding: 7px 10px 7px 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="search"]:focus { border-color: var(--accent); background: #fff; }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.12s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .chip[data-cat="all"]              { background: var(--text); color: #fff; border-color: var(--text); }
+  .chip[data-cat="banque_client"]    { background: var(--c-client); color: var(--t-client); }
+  .chip[data-cat="concurrence"]      { background: var(--c-nego); color: var(--t-nego); }
+  .chip[data-cat="nouvelle_grille"]  { background: var(--c-echange); color: var(--t-echange); }
+  .chip[data-cat="accord_commercial"]{ background: var(--c-profil); color: var(--t-profil); }
+  .chip[data-cat="echange_prealable"]{ background: var(--c-surfi); color: var(--t-surfi); }
+  .chip[data-cat="grille_incorrecte"]{ background: var(--c-flag); color: var(--t-flag); }
+  .chip[data-cat="autre"]            { background: var(--c-autre); color: var(--t-autre); }
+  .chip:not(.active) { opacity: 0.5; }
+  .chip:hover { opacity: 1; }
+  .chip.active { opacity: 1; border-color: currentColor; }
+
+  .delta-filter {
+    display: flex;
+    gap: 4px;
+  }
+  .dbtn {
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font);
+    transition: all 0.12s;
+  }
+  .dbtn.active, .dbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  #count-label {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 4px 0;
+  }
+
+  .table-wrap {
+    margin: 24px 32px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: #FAFBFD;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th:first-child { padding-left: 20px; }
+  tbody tr {
+    border-bottom: 1px solid #F0F2F7;
+    transition: background 0.08s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #F8F9FC; }
+  tbody td {
+    padding: 10px 14px;
+    vertical-align: top;
+    font-size: 13px;
+    color: var(--text);
+  }
+  tbody td:first-child { padding-left: 20px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-banque_client    { background: var(--c-client); color: var(--t-client); }
+  .tag-concurrence      { background: var(--c-nego); color: var(--t-nego); }
+  .tag-nouvelle_grille  { background: var(--c-echange); color: var(--t-echange); }
+  .tag-accord_commercial{ background: var(--c-profil); color: var(--t-profil); }
+  .tag-echange_prealable{ background: var(--c-surfi); color: var(--t-surfi); }
+  .tag-grille_incorrecte{ background: var(--c-flag); color: var(--t-flag); }
+  .tag-autre            { background: var(--c-autre); color: var(--t-autre); }
+
+  .delta-pill {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .d-neg  { background: #D1FAE5; color: #065F46; }
+  .d-pos  { background: #FEE2E2; color: #991B1B; }
+  .d-zero { background: #F1F5F9; color: #475569; }
+
+  .rate-val { font-weight: 600; }
+  .rate-grid { color: var(--muted); }
+  .bank-name {
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .comment-cell {
+    max-width: 360px;
+    line-height: 1.45;
+  }
+  .expert-cell {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .group-row td {
+    background: #F0F3FA;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .empty-state {
+    padding: 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Taux demandé &lt;&lt; Taux Zou — Juin 2026</h1>
+    <p>Taux envoyé ≠ taux grille · <em>Partage interne — usage Aurore / Thomas</em></p>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-n" id="stat-total">—</div>
+      <div class="stat-label">Feedbacks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="stat-below">—</div>
+      <div class="stat-label">Sous grille</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="stat-above">—</div>
+      <div class="stat-label">Sur grille</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="stat-delta">—</div>
+      <div class="stat-label">Δ moyen</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="search" id="search" placeholder="Rechercher commentaire, expert, banque…">
+  </div>
+
+  <div class="chips" id="cat-chips">
+    <div class="chip active" data-cat="all">Tous</div>
+    <div class="chip active" data-cat="banque_client">Banque client</div>
+    <div class="chip active" data-cat="concurrence">Concurrence</div>
+    <div class="chip active" data-cat="nouvelle_grille">Nouvelle grille</div>
+    <div class="chip active" data-cat="accord_commercial">Accord commercial</div>
+    <div class="chip active" data-cat="echange_prealable">Échange préalable</div>
+    <div class="chip active" data-cat="grille_incorrecte">Grille incorrecte</div>
+    <div class="chip active" data-cat="autre">Autre</div>
+  </div>
+
+  <div class="delta-filter" id="delta-btns">
+    <button class="dbtn active" data-dir="all">Tous</button>
+    <button class="dbtn" data-dir="neg">Sous grille</button>
+    <button class="dbtn" data-dir="pos">Sur grille</button>
+  </div>
+
+  <span id="count-label"></span>
+  <div style="display:flex;gap:4px;border-left:1px solid var(--border);padding-left:12px;margin-left:4px;">
+    <button class="dbtn" id="group-btn">Par agence</button>
+    <button class="dbtn" id="network-btn">Par réseau</button>
+  </div>
+  <div style="display:flex;gap:4px;border-left:1px solid var(--border);padding-left:12px;margin-left:4px;">
+    <button class="dbtn" id="veille-btn">Veille bi-hebdo</button>
+  </div>
+</div>
+
+<div id="veille-wrap" style="display:none;margin:24px 32px 0;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+    <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <strong style="font-size:14px;">Veille bi-hebdo — Accords &amp; Échanges préalables</strong>
+      <span style="font-size:12px;color:var(--muted);">≥ 3 retours · cliquer sur Δ pour voir le détail</span>
+      <div style="display:flex;gap:4px;margin-left:auto;">
+        <button class="dbtn active" id="vg-agence">Par agence</button>
+        <button class="dbtn" id="vg-reseau">Par réseau</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;">
+        <thead id="veille-thead">
+          <tr>
+            <th style="padding:8px 14px 8px 20px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;">Réseau</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;">Agence</th>
+            <th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;">Retours</th>
+            <th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;">Δ moyen</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;">Signal</th>
+          </tr>
+        </thead>
+        <tbody id="veille-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+<div id="loading-overlay" style="display:flex;position:fixed;inset:0;background:rgba(244,246,250,0.85);z-index:99;align-items:center;justify-content:center;font-size:14px;color:#64748B;">
+  Chargement des données…
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Thème</th>
+        <th>Commentaire</th>
+        <th>Expert</th>
+        <th>Banque</th>
+        <th>Lien</th>
+        <th>Envoyé</th>
+        <th>Grille</th>
+        <th>Δ</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty-state" id="empty" style="display:none">Aucun résultat pour cette sélection.</div>
+</div>
+
+<script>
+// ── Metabase live data ──────────────────────────────────────────────────────
+let DATA = [];
+
+const MB_BASE = 'https://data.pretto.fr';
+const PUBLIC_UUID = '2dc1a4d1-f7aa-46e3-9793-24c376a7d983';
+
+function mbRowToObj(r) {
+  const bank = r.banque || '';
+  return {
+    ts: r.jour,
+    expert: nameFromEmail(r.user_email || ''),
+    bank: normalizeBank(bank),
+    bankSlug: bank,
+    rate: parseFloat(r.interrogation_rate) || 0,
+    grid: parseFloat(r.grid_rate) || 0,
+    comment: r.comment || '',
+    projectId: r.project_id || '',
+    bareme: r.reason || null,
+    cat: categorize(r.comment || ''),
+    delta: Math.round(((parseFloat(r.interrogation_rate)||0) - (parseFloat(r.grid_rate)||0)) * 1000) / 1000
+  };
+}
+
+async function fetchData() {
+  const loading = document.getElementById('loading-overlay');
+  loading.style.display = 'flex';
+  try {
+    const params = encodeURIComponent(JSON.stringify([{
+      type: 'category',
+      value: '2026-06-01',
+      target: ['variable', ['template-tag', 'date_from']]
+    }]));
+    const res = await fetch(`${MB_BASE}/api/public/card/${PUBLIC_UUID}/query/json?parameters=${params}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    DATA.length = 0;
+    rows.forEach(r => DATA.push(mbRowToObj(r)));
+  } catch(e) {
+    console.error('Fetch error:', e);
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+async function init() {
+  await fetchData();
+  window.render();
+}
+
+
+let activeCat = 'all';
+let activeDir = 'all';
+let searchQ = '';
+let grouped = false; // 'bank' | 'network' | false
+
+function render() {
+  const q = searchQ.toLowerCase();
+  const filtered = DATA.filter(row => {
+    if (activeCat !== 'all' && row.cat !== activeCat) return false;
+    if (activeDir === 'neg' && row.delta >= -0.001) return false;
+    if (activeDir === 'pos' && row.delta <= 0.001) return false;
+    if (q && !row.expert.toLowerCase().includes(q) && !row.comment.toLowerCase().includes(q) && !row.bank.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => (a.ts < b.ts ? 1 : -1));
+
+  const below = filtered.filter(r => r.delta < -0.001).length;
+  const above = filtered.filter(r => r.delta > 0.001).length;
+  const avg = filtered.length ? filtered.reduce((s, r) => s + r.delta, 0) / filtered.length : 0;
+  document.getElementById('stat-total').textContent = filtered.length;
+  document.getElementById('stat-below').textContent = below;
+  document.getElementById('stat-above').textContent = above;
+  document.getElementById('stat-delta').textContent = (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+  document.getElementById('count-label').textContent = filtered.length + ' résultat' + (filtered.length > 1 ? 's' : '');
+
+  const empty = document.getElementById('empty');
+  const tbody = document.getElementById('tbody');
+  if (filtered.length === 0) { empty.style.display = ''; tbody.innerHTML = ''; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(row => {
+    const dc = row.delta < -0.001 ? 'd-neg' : row.delta > 0.001 ? 'd-pos' : 'd-zero';
+    const ds = (row.delta >= 0 ? '+' : '') + row.delta.toFixed(2) + '%';
+    return `<tr>
+      <td>${formatDate(row.ts)}</td>
+      <td><span class="tag tag-${row.cat}">${CAT_LABELS[row.cat]}</span></td>
+      <td class="comment-cell">${row.comment}</td>
+      <td class="expert-cell">${row.expert}</td>
+      <td class="bank-name" title="${row.bank}">${row.bank}${row.bareme ? `<br><span style="font-size:10px;color:var(--muted);font-weight:500;">${row.bareme}</span>` : ''}</td>
+      <td><a href="https://zou.finspot.co/mortgage/${row.projectId}/requests/grid" target="_blank" rel="noopener" style="color:var(--accent);font-size:12px;white-space:nowrap;">Zou ↗</a></td>
+      <td><span class="rate-val">${row.rate.toFixed(2)}%</span></td>
+      <td><span class="rate-grid">${row.grid.toFixed(2)}%</span></td>
+      <td><span class="delta-pill ${dc}">${ds}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// Chip filter (toggle individual categories)
+document.getElementById('cat-chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const cat = chip.dataset.cat;
+  if (cat === 'all') {
+    activeCat = 'all';
+    document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
+  } else {
+    document.querySelector('.chip[data-cat="all"]').classList.remove('active');
+    chip.classList.toggle('active');
+    const active = [...document.querySelectorAll('.chip:not([data-cat="all"])')].filter(c => c.classList.contains('active'));
+    if (active.length === 0) {
+      activeCat = 'all';
+      document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
+    } else if (active.length === 1) {
+      activeCat = active[0].dataset.cat;
+    } else {
+      activeCat = 'multi:' + active.map(c => c.dataset.cat).join(',');
+    }
+  }
+  render();
+});
+
+document.getElementById('delta-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.dbtn');
+  if (!btn) return;
+  activeDir = btn.dataset.dir;
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value;
+  render();
+});
+
+// Patch render for multi-cat
+const _render = render;
+window.render = function() {
+  const q = searchQ.toLowerCase();
+  let cats = null;
+  if (activeCat !== 'all' && activeCat.startsWith('multi:')) {
+    cats = new Set(activeCat.slice(6).split(','));
+  } else if (activeCat !== 'all') {
+    cats = new Set([activeCat]);
+  }
+
+  const filtered = DATA.filter(row => {
+    if (cats && !cats.has(row.cat)) return false;
+    if (activeDir === 'neg' && row.delta >= -0.001) return false;
+    if (activeDir === 'pos' && row.delta <= 0.001) return false;
+    if (q && !row.expert.toLowerCase().includes(q) && !row.comment.toLowerCase().includes(q) && !row.bank.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a, b) => (a.ts < b.ts ? 1 : -1));
+
+  const below = filtered.filter(r => r.delta < -0.001).length;
+  const above = filtered.filter(r => r.delta > 0.001).length;
+  const avg = filtered.length ? filtered.reduce((s, r) => s + r.delta, 0) / filtered.length : 0;
+  document.getElementById('stat-total').textContent = filtered.length;
+  document.getElementById('stat-below').textContent = below;
+  document.getElementById('stat-above').textContent = above;
+  document.getElementById('stat-delta').textContent = (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+  document.getElementById('count-label').textContent = filtered.length + ' résultat' + (filtered.length > 1 ? 's' : '');
+
+  const empty = document.getElementById('empty');
+  const tbody = document.getElementById('tbody');
+  if (filtered.length === 0) { empty.style.display = ''; tbody.innerHTML = ''; return; }
+  empty.style.display = 'none';
+
+  function rowHtml(row) {
+    const dc = row.delta < -0.001 ? 'd-neg' : row.delta > 0.001 ? 'd-pos' : 'd-zero';
+    const ds = (row.delta >= 0 ? '+' : '') + row.delta.toFixed(2) + '%';
+    return `<tr>
+      <td>${formatDate(row.ts)}</td>
+      <td><span class="tag tag-${row.cat}">${CAT_LABELS[row.cat]}</span></td>
+      <td class="comment-cell">${row.comment}</td>
+      <td class="expert-cell">${row.expert}</td>
+      <td class="bank-name" title="${row.bank}">${row.bank}${row.bareme ? `<br><span style="font-size:10px;color:var(--muted);font-weight:500;">${row.bareme}</span>` : ''}</td>
+      <td><a href="https://zou.finspot.co/mortgage/${row.projectId}/requests/grid" target="_blank" rel="noopener" style="color:var(--accent);font-size:12px;white-space:nowrap;">Zou ↗</a></td>
+      <td><span class="rate-val">${row.rate.toFixed(2)}%</span></td>
+      <td><span class="rate-grid">${row.grid.toFixed(2)}%</span></td>
+      <td><span class="delta-pill ${dc}">${ds}</span></td>
+    </tr>`;
+  }
+
+  const COLS = 9;
+  const expandedGroups = new Set();
+
+  // Familles qui ont des sous-agences → arbre 2 niveaux en mode réseau
+  const FAMILY_NETWORKS = new Set(['Crédit Agricole', 'Caisse d\'Épargne', 'Banque Populaire']);
+
+  function renderGroups(keyFn, useSubgroups) {
+    const byKey = {}, order = [];
+    filtered.slice().sort((a, b) => keyFn(a).localeCompare(keyFn(b)) || (b.ts < a.ts ? -1 : 1)).forEach(row => {
+      const k = keyFn(row);
+      if (!byKey[k]) { byKey[k] = []; order.push(k); }
+      byKey[k].push(row);
+    });
+
+    function buildGroups() {
+      tbody.innerHTML = order.map((k, i) => {
+        const rows = byKey[k];
+        const gKey = String(i);
+        const open = expandedGroups.has(gKey);
+
+        if (useSubgroups && FAMILY_NETWORKS.has(k)) {
+          // Niveau 1 : réseau → sous-groupes par agence
+          const byAgence = {}, agenceOrder = [];
+          rows.forEach(r => {
+            if (!byAgence[r.bank]) { byAgence[r.bank] = []; agenceOrder.push(r.bank); }
+            byAgence[r.bank].push(r);
+          });
+          const uniqAgences = [...new Set(agenceOrder)].sort((a, b) => a.localeCompare(b));
+
+          const subContent = open ? uniqAgences.map((agence, j) => {
+            const agRows = byAgence[agence];
+            const sKey = `${i}-${j}`;
+            const sOpen = expandedGroups.has(sKey);
+            const sDetail = sOpen ? agRows.map(rowHtml).join('') : '';
+            return `<tr class="group-row" data-gi="${sKey}" style="cursor:pointer;background:#F8FAFF;">
+              <td colspan="${COLS}" style="padding-left:36px;font-size:11px;font-weight:600;color:var(--accent);text-transform:none;letter-spacing:0;">
+                <span style="font-size:10px;margin-right:6px;">${sOpen ? '▾' : '▸'}</span>${agence}
+                <span style="font-weight:400;color:var(--muted);margin-left:6px;">${agRows.length} envoi${agRows.length > 1 ? 's' : ''}</span>
+              </td>
+            </tr>${sDetail}`;
+          }).join('') : '';
+
+          return `<tr class="group-row" data-gi="${gKey}" style="cursor:pointer;" title="${open ? 'Réduire' : 'Voir les agences'}">
+            <td colspan="${COLS}">
+              <span style="font-size:11px;color:var(--accent);margin-right:6px;">${open ? '▾' : '▸'}</span>${k} — ${rows.length} envoi${rows.length > 1 ? 's' : ''}
+              <span style="font-size:10px;color:var(--muted);margin-left:8px;">${uniqAgences.length} agence${uniqAgences.length > 1 ? 's' : ''}</span>
+            </td>
+          </tr>${subContent}`;
+        }
+
+        // Niveau 1 simple : groupe → lignes
+        const detail = open ? rows.map(rowHtml).join('') : '';
+        return `<tr class="group-row" data-gi="${gKey}" style="cursor:pointer;" title="${open ? 'Réduire' : 'Voir le détail'}">
+          <td colspan="${COLS}">
+            <span style="font-size:11px;color:var(--accent);margin-right:6px;">${open ? '▾' : '▸'}</span>${k} — ${rows.length} envoi${rows.length > 1 ? 's' : ''}
+          </td>
+        </tr>${detail}`;
+      }).join('');
+
+      tbody.querySelectorAll('tr.group-row').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const key = tr.dataset.gi;
+          if (expandedGroups.has(key)) expandedGroups.delete(key); else expandedGroups.add(key);
+          buildGroups();
+        });
+      });
+    }
+    buildGroups();
+  }
+
+  if (!grouped) {
+    tbody.innerHTML = filtered.map(rowHtml).join('');
+  } else if (grouped === 'bank') {
+    renderGroups(r => r.bank, false);
+  } else {
+    renderGroups(r => networkOf(r.bank), true);
+  }
+};
+
+const THRESHOLD = 3;
+let veilleGroup = 'agence';
+
+function renderVeille() {
+  const eligible = DATA.filter(r => r.cat === 'accord_commercial' || r.cat === 'echange_prealable');
+  const keyFn = veilleGroup === 'network' ? r => networkOf(r.bank) : r => r.bank;
+
+  const byKey = {};
+  eligible.forEach(r => {
+    const k = keyFn(r);
+    if (!byKey[k]) byKey[k] = { items: [], network: networkOf(r.bank) };
+    byKey[k].items.push(r);
+  });
+
+  const rows = Object.entries(byKey)
+    .map(([key, { items, network }]) => ({
+      key,
+      network,
+      items,
+      count: items.length,
+      avgDelta: items.reduce((s, r) => s + r.delta, 0) / items.length,
+      flag: items.length >= THRESHOLD
+    }))
+    .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+
+  const thStyle = 'padding:8px 14px 8px 20px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#FAFBFD;border-bottom:1px solid var(--border);white-space:nowrap;';
+  const thStyleR = thStyle.replace('text-align:left','text-align:right');
+  const thead = document.getElementById('veille-thead');
+  thead.querySelector('tr').innerHTML = veilleGroup === 'network'
+    ? `<th style="${thStyle}">Réseau</th><th style="${thStyleR}">Retours</th><th style="${thStyleR}">Δ moyen</th><th style="${thStyle}">Signal</th>`
+    : `<th style="${thStyle}">Réseau</th><th style="${thStyle}">Agence</th><th style="${thStyleR}">Retours</th><th style="${thStyleR}">Δ moyen</th><th style="${thStyle}">Signal</th>`;
+
+  const tbody = document.getElementById('veille-tbody');
+  if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">Aucun signal</td></tr>'; return; }
+
+  const expanded = new Set();
+
+  function buildRows() {
+    tbody.innerHTML = rows.map((r, i) => {
+      const dc = r.avgDelta < -0.001 ? 'd-neg' : r.avgDelta > 0.001 ? 'd-pos' : 'd-zero';
+      const ds = (r.avgDelta >= 0 ? '+' : '') + r.avgDelta.toFixed(2) + '%';
+      const signal = r.flag
+        ? (r.avgDelta < -0.001
+            ? `<span style="color:#065F46;font-weight:600;">⬇ Baisser la grille de ~${Math.abs(r.avgDelta).toFixed(2)}%</span>`
+            : r.avgDelta > 0.001
+              ? `<span style="color:#991B1B;font-weight:600;">⬆ Remonter la grille de ~${r.avgDelta.toFixed(2)}%</span>`
+              : `<span style="color:var(--muted)">Stable</span>`)
+        : `<span style="color:var(--muted);font-size:12px;">${r.count}/${THRESHOLD} — en cours</span>`;
+      const bg = r.flag ? '#FAFFF8' : '#fff';
+      const isOpen = expanded.has(i);
+      const label = veilleGroup === 'network' ? r.key : r.key;
+      const netCell = veilleGroup === 'network' ? '' : `<td style="padding:9px 14px 9px 20px;color:var(--muted);font-size:12px;">${r.network}</td>`;
+      const nameCell = veilleGroup === 'network'
+        ? `<td style="padding:9px 14px 9px 20px;font-weight:${r.flag?'600':'400'};">${label}</td>`
+        : `${netCell}<td style="padding:9px 14px;font-weight:${r.flag?'600':'400'};">${label}</td>`;
+
+      const detailRows = isOpen ? r.items.map(row => {
+        const ddc = row.delta < -0.001 ? 'd-neg' : row.delta > 0.001 ? 'd-pos' : 'd-zero';
+        const dds = (row.delta >= 0 ? '+' : '') + row.delta.toFixed(2) + '%';
+        return `<tr style="background:#F4F8FF;border-bottom:1px solid #E8EDF8;">
+          <td style="padding:7px 14px 7px 32px;color:var(--muted);font-size:11px;white-space:nowrap;">${formatDate(row.ts)}</td>
+          <td style="padding:7px 14px;font-size:12px;color:var(--muted);">${row.expert}</td>
+          <td style="padding:7px 14px;text-align:right;font-size:12px;font-weight:600;">${row.rate.toFixed(2)}%</td>
+          <td style="padding:7px 14px;text-align:right;font-size:12px;color:var(--muted);">${row.grid.toFixed(2)}%</td>
+          <td style="padding:7px 14px;"><span class="delta-pill ${ddc}">${dds}</span></td>
+          <td style="padding:7px 14px;font-size:11px;color:var(--accent);font-weight:600;">${row.bareme || '—'}</td>
+          <td style="padding:7px 14px;font-size:12px;color:var(--muted);max-width:240px;">${row.comment}</td>
+          <td style="padding:7px 14px;"><a href="https://zou.finspot.co/mortgage/${row.projectId}/requests/grid" target="_blank" rel="noopener" style="color:var(--accent);font-size:11px;white-space:nowrap;">Zou ↗</a></td>
+        </tr>`;
+      }).join('') : '';
+
+      return `<tr data-vi="${i}" style="background:${bg};border-bottom:1px solid #F0F2F7;cursor:default;">
+        ${nameCell}
+        <td style="padding:9px 14px;text-align:right;font-weight:700;color:${r.flag?'var(--accent)':'var(--muted)'};">${r.count}</td>
+        <td style="padding:9px 14px;text-align:right;">
+          <span class="delta-pill ${dc}" data-vi="${i}" style="cursor:pointer;text-decoration:underline dotted;" title="Cliquer pour voir le détail">${ds} ${isOpen ? '▲' : '▼'}</span>
+        </td>
+        <td style="padding:9px 14px;">${signal}</td>
+      </tr>${detailRows}`;
+    }).join('');
+
+    tbody.querySelectorAll('[data-vi]').forEach(el => {
+      if (el.tagName === 'SPAN') {
+        el.addEventListener('click', () => {
+          const i = +el.dataset.vi;
+          if (expanded.has(i)) expanded.delete(i); else expanded.add(i);
+          buildRows();
+        });
+      }
+    });
+  }
+
+  buildRows();
+}
+
+document.getElementById('vg-agence').addEventListener('click', function() {
+  veilleGroup = 'bank';
+  this.classList.add('active');
+  document.getElementById('vg-reseau').classList.remove('active');
+  renderVeille();
+});
+document.getElementById('vg-reseau').addEventListener('click', function() {
+  veilleGroup = 'network';
+  this.classList.add('active');
+  document.getElementById('vg-agence').classList.remove('active');
+  renderVeille();
+});
+
+document.getElementById('veille-btn').addEventListener('click', function() {
+  const wrap = document.getElementById('veille-wrap');
+  const visible = wrap.style.display !== 'none';
+  wrap.style.display = visible ? 'none' : 'block';
+  this.classList.toggle('active', !visible);
+  this.textContent = visible ? 'Veille bi-hebdo' : 'Veille bi-hebdo ✓';
+  if (!visible) renderVeille();
+});
+
+document.getElementById('group-btn').addEventListener('click', function() {
+  grouped = grouped === 'bank' ? false : 'bank';
+  this.classList.toggle('active', grouped === 'bank');
+  this.textContent = grouped === 'bank' ? 'Par agence ✓' : 'Par agence';
+  document.getElementById('network-btn').classList.remove('active');
+  document.getElementById('network-btn').textContent = 'Par réseau';
+  window.render();
+});
+
+document.getElementById('network-btn').addEventListener('click', function() {
+  grouped = grouped === 'network' ? false : 'network';
+  this.classList.toggle('active', grouped === 'network');
+  this.textContent = grouped === 'network' ? 'Par réseau ✓' : 'Par réseau';
+  document.getElementById('group-btn').classList.remove('active');
+  document.getElementById('group-btn').textContent = 'Par agence';
+  window.render();
+});
+
+init();
+</script>
+
+</body></html>
