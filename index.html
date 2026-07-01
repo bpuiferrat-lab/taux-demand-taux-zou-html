@@ -410,7 +410,7 @@ function categorize(comment, reason) {
   const c = (comment || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const r = (reason || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   if (r.includes('zou rare') || r.includes('rare')) return 'nouvelle_grille';
-  if (c.includes('offre') || c.includes('concurr') || c.includes('concurrent') || c.includes('proposition agress') || c.includes('propal concurrent')) return 'concurrence';
+  if (c.includes('offre') || c.includes('concur') || c.includes('proposition agress') || c.includes('propal concurrent')) return 'concurrence';
   if (c.includes('achp') || c.includes('en amont') || (c.includes('appelle') && c.includes('amont'))) return 'echange_prealable';
   if (c.includes('accord') || c.includes('echange mail') || c.includes('deja un accord') || c.includes('principe')) return 'accord_commercial';
   if (c.includes('erreur') || c.includes('pensais avoir') || c.includes('taux basique') || c.includes('basee sur la grille')) return 'grille_incorrecte';
@@ -517,7 +517,12 @@ let grouped = false; // 'bank' | 'network' | false
 function render() {
   const q = searchQ.toLowerCase();
   const filtered = DATA.filter(row => {
-    if (activeCat !== 'all' && row.cat !== activeCat) return false;
+    if (activeCat !== 'all') {
+      if (activeCat.startsWith('multi:')) {
+        const cats = activeCat.slice(6).split(',');
+        if (!cats.includes(row.cat)) return false;
+      } else if (row.cat !== activeCat) return false;
+    }
     if (activeDir === 'neg' && row.delta >= -0.001) return false;
     if (activeDir === 'pos' && row.delta <= 0.001) return false;
     if (q && !row.expert.toLowerCase().includes(q) && !row.comment.toLowerCase().includes(q) && !row.bank.toLowerCase().includes(q)) return false;
@@ -555,18 +560,27 @@ function render() {
   }).join('');
 }
 
-// Chip filter (toggle individual categories)
+// Chip filter
 document.getElementById('cat-chips').addEventListener('click', e => {
   const chip = e.target.closest('.chip');
   if (!chip) return;
   const cat = chip.dataset.cat;
+  const nonAllChips = [...document.querySelectorAll('.chip:not([data-cat="all"])')];
   if (cat === 'all') {
     activeCat = 'all';
     document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
   } else {
-    document.querySelector('.chip[data-cat="all"]').classList.remove('active');
-    chip.classList.toggle('active');
-    const active = [...document.querySelectorAll('.chip:not([data-cat="all"])')].filter(c => c.classList.contains('active'));
+    const allActive = nonAllChips.every(c => c.classList.contains('active'));
+    if (allActive) {
+      // First click from "all active": exclusively select this chip
+      nonAllChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      document.querySelector('.chip[data-cat="all"]').classList.remove('active');
+    } else {
+      document.querySelector('.chip[data-cat="all"]').classList.remove('active');
+      chip.classList.toggle('active');
+    }
+    const active = nonAllChips.filter(c => c.classList.contains('active'));
     if (active.length === 0) {
       activeCat = 'all';
       document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
@@ -576,21 +590,21 @@ document.getElementById('cat-chips').addEventListener('click', e => {
       activeCat = 'multi:' + active.map(c => c.dataset.cat).join(',');
     }
   }
-  render();
+  window.render();
 });
 
 document.getElementById('delta-btns').addEventListener('click', e => {
   const btn = e.target.closest('.dbtn');
   if (!btn) return;
   activeDir = btn.dataset.dir;
-  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#delta-btns .dbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  render();
+  window.render();
 });
 
 document.getElementById('search').addEventListener('input', e => {
   searchQ = e.target.value;
-  render();
+  window.render();
 });
 
 // Patch render for multi-cat
