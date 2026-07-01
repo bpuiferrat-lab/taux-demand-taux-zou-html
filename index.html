@@ -409,17 +409,21 @@ function rowToObj(r) {
 async function fetchData() {
   const loading = document.getElementById('loading-overlay');
   loading.style.display = 'flex';
-  try {
-    const res = await fetch(APPS_SCRIPT_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
-    DATA.length = 0;
-    rows.forEach(r => DATA.push(rowToObj(r)));
-  } catch(e) {
-    console.error('Fetch error:', e);
-  } finally {
-    loading.style.display = 'none';
-  }
+  return new Promise((resolve) => {
+    const cb = 'cb_' + Date.now();
+    window[cb] = function(rows) {
+      delete window[cb];
+      document.body.removeChild(script);
+      DATA.length = 0;
+      rows.forEach(r => DATA.push(rowToObj(r)));
+      loading.style.display = 'none';
+      resolve();
+    };
+    const script = document.createElement('script');
+    script.onerror = () => { loading.style.display = 'none'; resolve(); };
+    script.src = APPS_SCRIPT_URL + '?callback=' + cb;
+    document.body.appendChild(script);
+  });
 }
 
 async function init() {
