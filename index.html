@@ -384,72 +384,10 @@
 </div>
 
 <script>
-// ── Google Sheets CSV live data ─────────────────────────────────────────────
+// ── Metabase live data ──────────────────────────────────────────────────────
 let DATA = [];
 
-function formatDate(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  if (isNaN(d)) return ts;
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function nameFromEmail(email) {
-  if (!email) return '?';
-  const local = email.split('@')[0];
-  const parts = local.split('.');
-  if (parts.length >= 2) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + ' ' + parts[1].charAt(0).toUpperCase() + '.';
-  return local;
-}
-
-function normalizeBank(bank) {
-  return bank || 'Inconnu';
-}
-
-function categorize(comment, reason) {
-  const c = (comment || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const r = (reason || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  if (r.includes('zou rare') || r.includes('rare')) return 'nouvelle_grille';
-  if (c.includes('offre') || c.includes('concur') || c.includes('proposition agress') || c.includes('propal concurrent')) return 'concurrence';
-  if (c.includes('achp') || c.includes('en amont') || (c.includes('appelle') && c.includes('amont'))) return 'echange_prealable';
-  if (c.includes('accord') || c.includes('echange mail') || c.includes('deja un accord') || c.includes('principe')) return 'accord_commercial';
-  if (c.includes('erreur') || c.includes('pensais avoir') || c.includes('taux basique') || c.includes('basee sur la grille')) return 'grille_incorrecte';
-  if (c.includes('client') || c.includes('profil') || c.includes('epargne') || c.includes('patrimoni') || c.includes('dossier')) return 'banque_client';
-  return 'autre';
-}
-
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUodlURhK3RfqYzHl01a_OX_moPsJdjBFc__y0wgJxhxb6uEAahUHYnekLlZ1JEVpTajN7wzShC3JJ/pub?output=csv';
-
-const CAT_LABELS = {
-  banque_client: 'Banque client',
-  concurrence: 'Concurrence',
-  nouvelle_grille: 'Nouvelle grille',
-  accord_commercial: 'Accord commercial',
-  echange_prealable: 'Échange préalable',
-  grille_incorrecte: 'Grille incorrecte',
-  autre: 'Autre',
-  all: 'Tous'
-};
-
-const NETWORK_MAP = {
-  'BNP Paribas': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'CCF': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'La Banque Postale': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'Fortuneo': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'Palatine': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'BRED': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'HSBC': 'BNP / CCF / LBP / Fortuneo / Palatine / BRED / HSBC',
-  'CIC': 'CIC / CM Non Partenaires / CM Partenaires',
-  'Credit Mutuel Non Partenaires': 'CIC / CM Non Partenaires / CM Partenaires',
-  'Credit Mutuel Partenaires': 'CIC / CM Non Partenaires / CM Partenaires',
-  'LCL': 'LCL',
-  'SG IDF': 'Société Générale',
-  'SG Province': 'Société Générale',
-};
-
-function networkOf(bank) {
-  return NETWORK_MAP[bank] || bank;
-}
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/pretto.fr/s/AKfycby0Aym-W60NIEzCmxjoZdzGUH1A_gjZ5BUTF0CNudY6Vo9q9VZj24ftp0KmCyw4TcEz/exec';
 
 function rowToObj(r) {
   const bank = r.banque || '';
@@ -463,37 +401,18 @@ function rowToObj(r) {
     comment: r.comment || '',
     projectId: r.project_id || '',
     bareme: r.reason || null,
-    cat: categorize(r.comment || '', r.reason || ''),
+    cat: categorize(r.comment || ''),
     delta: Math.round(((parseFloat(r.interrogation_rate)||0) - (parseFloat(r.grid_rate)||0)) * 1000) / 1000
   };
-}
-
-function parseCSV(text) {
-  const lines = text.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const vals = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; }
-      else if (line[i] === ',' && !inQ) { vals.push(cur); cur = ''; }
-      else { cur += line[i]; }
-    }
-    vals.push(cur);
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''));
-    return obj;
-  }).filter(r => r.jour && r.jour !== 'jour' && r.interrogation_rate !== '');
 }
 
 async function fetchData() {
   const loading = document.getElementById('loading-overlay');
   loading.style.display = 'flex';
   try {
-    const res = await fetch(SHEET_CSV_URL);
+    const res = await fetch(APPS_SCRIPT_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const rows = parseCSV(text);
+    const rows = await res.json();
     DATA.length = 0;
     rows.forEach(r => DATA.push(rowToObj(r)));
   } catch(e) {
@@ -517,12 +436,7 @@ let grouped = false; // 'bank' | 'network' | false
 function render() {
   const q = searchQ.toLowerCase();
   const filtered = DATA.filter(row => {
-    if (activeCat !== 'all') {
-      if (activeCat.startsWith('multi:')) {
-        const cats = activeCat.slice(6).split(',');
-        if (!cats.includes(row.cat)) return false;
-      } else if (row.cat !== activeCat) return false;
-    }
+    if (activeCat !== 'all' && row.cat !== activeCat) return false;
     if (activeDir === 'neg' && row.delta >= -0.001) return false;
     if (activeDir === 'pos' && row.delta <= 0.001) return false;
     if (q && !row.expert.toLowerCase().includes(q) && !row.comment.toLowerCase().includes(q) && !row.bank.toLowerCase().includes(q)) return false;
@@ -560,27 +474,18 @@ function render() {
   }).join('');
 }
 
-// Chip filter
+// Chip filter (toggle individual categories)
 document.getElementById('cat-chips').addEventListener('click', e => {
   const chip = e.target.closest('.chip');
   if (!chip) return;
   const cat = chip.dataset.cat;
-  const nonAllChips = [...document.querySelectorAll('.chip:not([data-cat="all"])')];
   if (cat === 'all') {
     activeCat = 'all';
     document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
   } else {
-    const allActive = nonAllChips.every(c => c.classList.contains('active'));
-    if (allActive) {
-      // First click from "all active": exclusively select this chip
-      nonAllChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      document.querySelector('.chip[data-cat="all"]').classList.remove('active');
-    } else {
-      document.querySelector('.chip[data-cat="all"]').classList.remove('active');
-      chip.classList.toggle('active');
-    }
-    const active = nonAllChips.filter(c => c.classList.contains('active'));
+    document.querySelector('.chip[data-cat="all"]').classList.remove('active');
+    chip.classList.toggle('active');
+    const active = [...document.querySelectorAll('.chip:not([data-cat="all"])')].filter(c => c.classList.contains('active'));
     if (active.length === 0) {
       activeCat = 'all';
       document.querySelectorAll('.chip').forEach(c => c.classList.add('active'));
@@ -590,21 +495,21 @@ document.getElementById('cat-chips').addEventListener('click', e => {
       activeCat = 'multi:' + active.map(c => c.dataset.cat).join(',');
     }
   }
-  window.render();
+  render();
 });
 
 document.getElementById('delta-btns').addEventListener('click', e => {
   const btn = e.target.closest('.dbtn');
   if (!btn) return;
   activeDir = btn.dataset.dir;
-  document.querySelectorAll('#delta-btns .dbtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  window.render();
+  render();
 });
 
 document.getElementById('search').addEventListener('input', e => {
   searchQ = e.target.value;
-  window.render();
+  render();
 });
 
 // Patch render for multi-cat
