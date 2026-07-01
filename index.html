@@ -586,7 +586,16 @@ const NETWORK_MAP = {
   'SG IDF': 'Société Générale',
   'SG Province': 'Société Générale'
 };
-function networkOf(bank) { return NETWORK_MAP[bank] || bank; }
+function networkOf(bank) {
+  if (!bank) return "Autre";
+  if (bank.startsWith("Caisse D Epargne") || bank.startsWith("Caisse d Epargne")) return "Caisse d Epargne";
+  if (bank.startsWith("Banque Populaire") || bank.startsWith("Bpvf") || bank.startsWith("Bp ")) return "Banque Populaire";
+  if (bank.startsWith("Credit Agricole")) return "Credit Agricole";
+  if (bank === "SG IDF" || bank === "SG Province") return "Societe Generale";
+  if (bank === "CIC" || bank.startsWith("Credit Mutuel")) return "CIC / Credit Mutuel";
+  if (bank === "BNP Paribas" || bank === "La Banque Postale" || bank === "Fortuneo" || bank === "Palatine" || bank === "BRED" || bank === "HSBC" || bank === "CCF") return "BNP / LBP / BRED / HSBC";
+  return bank;
+}
 // Patch render for multi-cat
 const _render = render;
 window.render = function() {
@@ -719,7 +728,8 @@ const THRESHOLD = 3;
 let veilleGroup = 'agence';
 
 function renderVeille() {
-  const eligible = DATA.filter(r => r.cat === 'accord_commercial' || r.cat === 'echange_prealable');
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14); cutoff.setHours(0,0,0,0);
+  const eligible = DATA.filter(r => (r.cat === "accord_commercial" || r.cat === "echange_prealable") && new Date(r.ts) >= cutoff);
   const keyFn = veilleGroup === 'network' ? r => networkOf(r.bank) : r => r.bank;
 
   const byKey = {};
