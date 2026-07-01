@@ -406,14 +406,15 @@ function normalizeBank(bank) {
   return bank || 'Inconnu';
 }
 
-function categorize(comment) {
-  const c = comment.toLowerCase();
-  if (c.includes('concurr') || c.includes('concurrent')) return 'concurrence';
-  if (c.includes('nouvelle grille') || c.includes('nouvelle barème') || c.includes('nouveau barème') || c.includes('nouvelle bareme') || c.includes('grille a changé') || c.includes('grille a change')) return 'nouvelle_grille';
-  if (c.includes('accord commercial') || c.includes('acc com') || c.includes('accord com')) return 'accord_commercial';
-  if (c.includes('échange') || c.includes('echange') || c.includes('exchange')) return 'echange_prealable';
-  if (c.includes('grille incorrecte') || c.includes('erreur grille') || c.includes('mauvaise grille')) return 'grille_incorrecte';
-  if (c.includes('banque') || c.includes('client') || c.includes('dossier') || c.includes('profil')) return 'banque_client';
+function reasonToCat(reason) {
+  if (!reason) return 'autre';
+  const r = reason.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (r.includes('accord')) return 'accord_commercial';
+  if (r.includes('echange') || r.includes('prealable')) return 'echange_prealable';
+  if (r.includes('concurr')) return 'concurrence';
+  if (r.includes('grille') && r.includes('incorr')) return 'grille_incorrecte';
+  if (r.includes('nouvelle') || r.includes('rare')) return 'nouvelle_grille';
+  if (r.includes('banque') || r.includes('client') || r.includes('bank')) return 'banque_client';
   return 'autre';
 }
 
@@ -462,15 +463,15 @@ function rowToObj(r) {
     comment: r.comment || '',
     projectId: r.project_id || '',
     bareme: r.reason || null,
-    cat: categorize(r.comment || ''),
+    cat: reasonToCat(r.reason || ''),
     delta: Math.round(((parseFloat(r.interrogation_rate)||0) - (parseFloat(r.grid_rate)||0)) * 1000) / 1000
   };
 }
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-  return lines.slice(1).map(line => {
+  return lines.slice(1).filter(l => l.trim()).map(line => {
     const vals = [];
     let cur = '', inQ = false;
     for (let i = 0; i < line.length; i++) {
@@ -480,9 +481,9 @@ function parseCSV(text) {
     }
     vals.push(cur);
     const obj = {};
-    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''));
     return obj;
-  });
+  }).filter(r => r.jour && /^\d{4}-\d{2}-\d{2}$/.test(r.jour));
 }
 
 async function fetchData() {
