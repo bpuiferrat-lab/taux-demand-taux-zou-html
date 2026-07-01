@@ -384,10 +384,10 @@
 </div>
 
 <script>
-// ── Metabase live data ──────────────────────────────────────────────────────
+// ── Google Sheets CSV live data ─────────────────────────────────────────────
 let DATA = [];
 
-const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/pretto.fr/s/AKfycby0Aym-W60NIEzCmxjoZdzGUH1A_gjZ5BUTF0CNudY6Vo9q9VZj24ftp0KmCyw4TcEz/exec';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUodlURhK3RfqYzHl01a_OX_moPsJdjBFc__y0wgJxhxb6uEAahUHYnekLlZ1JEVpTajN7wzShC3JJ/pub?output=csv';
 
 function rowToObj(r) {
   const bank = r.banque || '';
@@ -406,24 +406,39 @@ function rowToObj(r) {
   };
 }
 
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { vals.push(cur); cur = ''; }
+      else { cur += line[i]; }
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
+    return obj;
+  });
+}
+
 async function fetchData() {
   const loading = document.getElementById('loading-overlay');
   loading.style.display = 'flex';
-  return new Promise((resolve) => {
-    const cb = 'cb_' + Date.now();
-    window[cb] = function(rows) {
-      delete window[cb];
-      document.body.removeChild(script);
-      DATA.length = 0;
-      rows.forEach(r => DATA.push(rowToObj(r)));
-      loading.style.display = 'none';
-      resolve();
-    };
-    const script = document.createElement('script');
-    script.onerror = () => { loading.style.display = 'none'; resolve(); };
-    script.src = APPS_SCRIPT_URL + '?callback=' + cb;
-    document.body.appendChild(script);
-  });
+  try {
+    const res = await fetch(SHEET_CSV_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    DATA.length = 0;
+    rows.forEach(r => DATA.push(rowToObj(r)));
+  } catch(e) {
+    console.error('Fetch error:', e);
+  } finally {
+    loading.style.display = 'none';
+  }
 }
 
 async function init() {
