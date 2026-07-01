@@ -419,6 +419,17 @@ function categorize(comment) {
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUodlURhK3RfqYzHl01a_OX_moPsJdjBFc__y0wgJxhxb6uEAahUHYnekLlZ1JEVpTajN7wzShC3JJ/pub?output=csv';
 
+const CAT_LABELS = {
+  banque_client: 'Banque client',
+  concurrence: 'Concurrence',
+  nouvelle_grille: 'Nouvelle grille',
+  accord_commercial: 'Accord commercial',
+  echange_prealable: 'Échange préalable',
+  grille_incorrecte: 'Grille incorrecte',
+  autre: 'Autre',
+  all: 'Tous'
+};
+
 function rowToObj(r) {
   const bank = r.banque || '';
   return {
