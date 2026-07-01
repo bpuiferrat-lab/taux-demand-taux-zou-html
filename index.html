@@ -387,6 +387,13 @@
 // ── Google Sheets CSV live data ─────────────────────────────────────────────
 let DATA = [];
 
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 function nameFromEmail(email) {
   if (!email) return '?';
   const local = email.split('@')[0];
