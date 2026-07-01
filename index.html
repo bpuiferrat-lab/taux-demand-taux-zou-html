@@ -385,38 +385,6 @@
 
 <script>
 // ── Google Sheets CSV live data ─────────────────────────────────────────────
-function formatDate(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  if (isNaN(d)) return ts;
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-function nameFromEmail(email) {
-  if (!email) return '?';
-  const local = email.split('@')[0];
-  const parts = local.split('.');
-  if (parts.length >= 2) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + ' ' + parts[1].charAt(0).toUpperCase() + '.';
-  return local;
-}
-const CAT_LABELS = { banque_client:'Banque client', concurrence:'Concurrence', nouvelle_grille:'Nouvelle grille', accord_commercial:'Accord commercial', echange_prealable:'Echange prealable', grille_incorrecte:'Grille incorrecte', autre:'Autre', all:'Tous' };
-const NETWORK_MAP = { 'BNP Paribas':'BNP Reseau', 'La Banque Postale':'BNP Reseau', 'Fortuneo':'BNP Reseau', 'Palatine':'BNP Reseau', 'BRED':'BNP Reseau', 'HSBC':'BNP Reseau', 'CCF':'BNP Reseau', 'CIC':'CIC / CM', 'Credit Mutuel Non Partenaires':'CIC / CM', 'Credit Mutuel Partenaires':'CIC / CM', 'LCL':'LCL', 'SG IDF':'Societe Generale', 'SG Province':'Societe Generale' };
-function networkOf(bank) { return NETWORK_MAP[bank] || bank; }
-function formatDate(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  if (isNaN(d)) return ts;
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-function nameFromEmail(email) {
-  if (!email) return '?';
-  const local = email.split('@')[0];
-  const parts = local.split('.');
-  if (parts.length >= 2) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + ' ' + parts[1].charAt(0).toUpperCase() + '.';
-  return local;
-}
-const CAT_LABELS = { banque_client:'Banque client', concurrence:'Concurrence', nouvelle_grille:'Nouvelle grille', accord_commercial:'Accord commercial', echange_prealable:'Echange prealable', grille_incorrecte:'Grille incorrecte', autre:'Autre', all:'Tous' };
-const NETWORK_MAP = { 'BNP Paribas':'BNP Reseau', 'La Banque Postale':'BNP Reseau', 'Fortuneo':'BNP Reseau', 'Palatine':'BNP Reseau', 'BRED':'BNP Reseau', 'HSBC':'BNP Reseau', 'CCF':'BNP Reseau', 'CIC':'CIC / CM', 'Credit Mutuel Non Partenaires':'CIC / CM', 'Credit Mutuel Partenaires':'CIC / CM', 'LCL':'LCL', 'SG IDF':'Societe Generale', 'SG Province':'Societe Generale' };
-function networkOf(bank) { return NETWORK_MAP[bank] || bank; }
 let DATA = [];
 
 function formatDate(ts) {
@@ -598,11 +566,27 @@ const CAT_LABELS = {
   concurrence: 'Concurrence',
   nouvelle_grille: 'Nouvelle grille',
   accord_commercial: 'Accord commercial',
-  echange_prealable: '�change pr�alable',
+  echange_prealable: 'Échange préalable',
   grille_incorrecte: 'Grille incorrecte',
   autre: 'Autre',
   all: 'Tous'
 };
+const NETWORK_MAP = {
+  'BNP Paribas': 'BNP Réseau',
+  'La Banque Postale': 'BNP Réseau',
+  'Fortuneo': 'BNP Réseau',
+  'Palatine': 'BNP Réseau',
+  'BRED': 'BNP Réseau',
+  'HSBC': 'BNP Réseau',
+  'CCF': 'BNP Réseau',
+  'CIC': 'CIC / CM',
+  'Crédit Mutuel Non Partenaires': 'CIC / CM',
+  'Crédit Mutuel Partenaires': 'CIC / CM',
+  'LCL': 'LCL',
+  'SG IDF': 'Société Générale',
+  'SG Province': 'Société Générale'
+};
+function networkOf(bank) { return NETWORK_MAP[bank] || bank; }
 // Patch render for multi-cat
 const _render = render;
 window.render = function() {
