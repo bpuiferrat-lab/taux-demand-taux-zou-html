@@ -387,10 +387,9 @@
 // ── Metabase live data ──────────────────────────────────────────────────────
 let DATA = [];
 
-const MB_BASE = 'https://data.pretto.fr';
-const PUBLIC_UUID = '2dc1a4d1-f7aa-46e3-9793-24c376a7d983';
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/pretto.fr/s/AKfycby0Aym-W60NIEzCmxjoZdzGUH1A_gjZ5BUTF0CNudY6Vo9q9VZj24ftp0KmCyw4TcEz/exec';
 
-function mbRowToObj(r) {
+function rowToObj(r) {
   const bank = r.banque || '';
   return {
     ts: r.jour,
@@ -411,16 +410,11 @@ async function fetchData() {
   const loading = document.getElementById('loading-overlay');
   loading.style.display = 'flex';
   try {
-    const params = encodeURIComponent(JSON.stringify([{
-      type: 'category',
-      value: '2026-06-01',
-      target: ['variable', ['template-tag', 'date_from']]
-    }]));
-    const res = await fetch(`${MB_BASE}/api/public/card/${PUBLIC_UUID}/query/json?parameters=${params}`);
+    const res = await fetch(APPS_SCRIPT_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const rows = await res.json();
     DATA.length = 0;
-    rows.forEach(r => DATA.push(mbRowToObj(r)));
+    rows.forEach(r => DATA.push(rowToObj(r)));
   } catch(e) {
     console.error('Fetch error:', e);
   } finally {
