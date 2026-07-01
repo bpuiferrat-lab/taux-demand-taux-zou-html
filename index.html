@@ -406,15 +406,22 @@ function normalizeBank(bank) {
   return bank || 'Inconnu';
 }
 
-function categorize(comment) {
-  const c = comment.toLowerCase();
+function categorize(comment, reason) {
+  const c = (comment || '').toLowerCase();
+  // Priorité 1 : signaux forts explicites dans le comment
   if (c.includes('concurr') || c.includes('concurrent')) return 'concurrence';
   if (c.includes('nouvelle grille') || c.includes('nouvelle barème') || c.includes('nouveau barème') || c.includes('nouvelle bareme') || c.includes('grille a changé') || c.includes('grille a change')) return 'nouvelle_grille';
   if (c.includes('accord commercial') || c.includes('acc com') || c.includes('accord com')) return 'accord_commercial';
   if (c.includes('échange') || c.includes('echange') || c.includes('exchange')) return 'echange_prealable';
   if (c.includes('grille incorrecte') || c.includes('erreur grille') || c.includes('mauvaise grille')) return 'grille_incorrecte';
-  if (c.includes('banque') || c.includes('client') || c.includes('dossier') || c.includes('profil')) return 'banque_client';
-  return 'autre';
+  // Priorité 2 : fallback sur reason (source form)
+  switch (reason) {
+    case 'Demande banque': return 'accord_commercial';
+    case 'Zou rare':       return 'grille_incorrecte';
+    case 'Info collegue':  return 'concurrence';
+    case 'Essai':          return 'banque_client';
+    default:               return 'autre';
+  }
 }
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUodlURhK3RfqYzHl01a_OX_moPsJdjBFc__y0wgJxhxb6uEAahUHYnekLlZ1JEVpTajN7wzShC3JJ/pub?output=csv';
@@ -431,7 +438,7 @@ function rowToObj(r) {
     comment: r.comment || '',
     projectId: r.project_id || '',
     bareme: r.reason || null,
-    cat: categorize(r.comment || ''),
+    cat: categorize(r.comment || '', r.reason || ''),
     delta: Math.round(((parseFloat(r.interrogation_rate)||0) - (parseFloat(r.grid_rate)||0)) * 1000) / 1000
   };
 }
