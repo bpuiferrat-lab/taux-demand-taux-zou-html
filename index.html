@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
-<title>Taux demandé &lt;&lt; Taux Zou — Juin 2026</title>
+<title>Taux demandé &lt;&lt; Taux Zou</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -275,7 +275,7 @@
 
 <div class="header">
   <div class="header-left">
-    <h1>Taux demandé &lt;&lt; Taux Zou — Juin 2026</h1>
+    <h1>Taux demandé &lt;&lt; Taux Zou</h1>
     <p>Taux envoyé ≠ taux grille · <em>Partage interne — usage Aurore / Thomas</em></p>
   </div>
   <div class="stats">
@@ -332,15 +332,15 @@
     <button class="dbtn" id="network-btn">Par réseau</button>
   </div>
   <div style="display:flex;gap:4px;border-left:1px solid var(--border);padding-left:12px;margin-left:4px;">
-    <button class="dbtn" id="veille-btn">Veille bi-hebdo</button>
+    <button class="dbtn" id="veille-btn">Signaux grille</button>
   </div>
 </div>
 
 <div id="veille-wrap" style="display:none;margin:24px 32px 0;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
     <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-      <strong style="font-size:14px;">Veille bi-hebdo — Accords &amp; Échanges préalables</strong>
-      <span style="font-size:12px;color:var(--muted);">≥ 3 retours · cliquer sur Δ pour voir le détail</span>
+      <strong style="font-size:14px;">Signaux grille — Accords &amp; Échanges préalables</strong>
+      <span style="font-size:12px;color:var(--muted);">≥ 3 retours sur les 14 derniers jours par défaut (modifiable via « Depuis le ») · clic sur Δ pour le détail</span>
       <div style="display:flex;gap:4px;margin-left:auto;">
         <button class="dbtn active" id="vg-agence">Par agence</button>
         <button class="dbtn" id="vg-reseau">Par réseau</button>
@@ -524,6 +524,7 @@ let sinceDate = '';
 document.getElementById('since-date').addEventListener('change', e => {
   sinceDate = e.target.value;
   window.render();
+  if (document.getElementById('veille-wrap').style.display !== 'none') renderVeille();
 });
 
 function render() {
@@ -764,7 +765,12 @@ const THRESHOLD = 3;
 let veilleGroup = 'agence';
 
 function renderVeille() {
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14); cutoff.setHours(0,0,0,0);
+  let cutoff;
+  if (sinceDate) {
+    cutoff = new Date(sinceDate);
+  } else {
+    cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14); cutoff.setHours(0,0,0,0);
+  }
   const eligible = DATA.filter(r => (r.cat === "accord_commercial" || r.cat === "echange_prealable") && new Date(r.ts) >= cutoff);
   const keyFn = veilleGroup === 'network' ? r => networkOf(r.bank) : r => r.bank;
 
@@ -874,7 +880,7 @@ document.getElementById('veille-btn').addEventListener('click', function() {
   const visible = wrap.style.display !== 'none';
   wrap.style.display = visible ? 'none' : 'block';
   this.classList.toggle('active', !visible);
-  this.textContent = visible ? 'Veille bi-hebdo' : 'Veille bi-hebdo ✓';
+  this.textContent = visible ? 'Signaux grille' : 'Signaux grille ✓';
   if (!visible) renderVeille();
 });
 
