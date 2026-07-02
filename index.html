@@ -304,6 +304,11 @@
     <input type="search" id="search" placeholder="Rechercher commentaire, expert, banque…">
   </div>
 
+  <div style="display:flex;align-items:center;gap:6px;">
+    <label for="since-date" style="font-size:12px;color:var(--muted);white-space:nowrap;">Depuis le</label>
+    <input type="date" id="since-date" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);background:var(--bg);color:var(--text);">
+  </div>
+
   <div class="chips" id="cat-chips">
     <div class="chip active" data-cat="all">Tous</div>
     <div class="chip active" data-cat="banque_client">Banque client</div>
@@ -515,6 +520,11 @@ let activeCat = 'all';
 let activeDir = 'all';
 let searchQ = '';
 let grouped = false; // 'bank' | 'network' | false
+let sinceDate = '';
+document.getElementById('since-date').addEventListener('change', e => {
+  sinceDate = e.target.value;
+  window.render();
+});
 
 function render() {
   const q = searchQ.toLowerCase();
@@ -578,7 +588,7 @@ document.getElementById('cat-chips').addEventListener('click', e => {
       activeCat = 'multi:' + active.map(c => c.dataset.cat).join(',');
     }
   }
-  render();
+  window.render();
 });
 
 document.getElementById('delta-btns').addEventListener('click', e => {
@@ -587,12 +597,12 @@ document.getElementById('delta-btns').addEventListener('click', e => {
   activeDir = btn.dataset.dir;
   document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  render();
+  window.render();
 });
 
 document.getElementById('search').addEventListener('input', e => {
   searchQ = e.target.value;
-  render();
+  window.render();
 });
 
 const CAT_LABELS = {
@@ -634,6 +644,7 @@ window.render = function() {
 
   const filtered = DATA.filter(row => {
     if (cats && !cats.has(row.cat)) return false;
+    if (sinceDate && row.ts < sinceDate) return false;
     if (activeDir === 'neg' && row.delta >= -0.001) return false;
     if (activeDir === 'pos' && row.delta <= 0.001) return false;
     if (q && !row.expert.toLowerCase().includes(q) && !row.comment.toLowerCase().includes(q) && !row.bank.toLowerCase().includes(q)) return false;
